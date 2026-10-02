@@ -20,4 +20,23 @@
     <Reference Include="$(GameDir)\EscapeFromTarkov_Data\Managed\UnityEngine.CoreModule.dll" Private="false" />
   </ItemGroup>
 
+  <Target Name="PackageRelease" AfterTargets="Build">
+    <PropertyGroup>
+      <RepoDir>$(MSBuildProjectDirectory)/../</RepoDir>
+      <ServerDll>$(RepoDir)Server/bin/$(Configuration)/$(AssemblyName).dll</ServerDll>
+      <StageDir>$(RepoDir)release/stage/</StageDir>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(ServerDll)')" Text="$(ServerDll) not found. Build the Server project first." />
+    <ItemGroup>
+      <ClientFiles Include="$(TargetPath);$(RepoDir)LICENSE" />
+      <ServerFiles Include="$(ServerDll);$(RepoDir)LICENSE" />
+    </ItemGroup>
+    <RemoveDir Directories="$(StageDir)" />
+    <Copy SourceFiles="@(ClientFiles)" DestinationFolder="$(StageDir)BepInEx/plugins/$(AssemblyName)/" />
+    <Copy SourceFiles="@(ServerFiles)" DestinationFolder="$(StageDir)SPT_Runtime/user/mods/$(AssemblyName)/" />
+    <ZipDirectory SourceDirectory="$(StageDir)" DestinationFile="$(RepoDir)release/$(AssemblyName).zip" Overwrite="true" />
+    <Copy Condition="Exists('$(GameDir)')" SourceFiles="@(ClientFiles)" DestinationFolder="$(GameDir)/BepInEx/plugins/$(AssemblyName)/" />
+    <Copy Condition="Exists('$(GameDir)')" SourceFiles="@(ServerFiles)" DestinationFolder="$(GameDir)/SPT_Runtime/user/mods/$(AssemblyName)/" />
+  </Target>
+
 </Project>
